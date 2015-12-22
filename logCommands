@@ -1,0 +1,102 @@
+ssh -i udacity_key.rsa root@52.33.123.83
+sudo adduser grader
+# pass: grader
+sudo passwd -e grader
+cd /etc/sudoers.d
+sudo touch grader
+nano grader
+grader ALL=(ALL) NOPASSWD:ALL
+logout
+
+# on local machine
+ssh-keygen
+# file name
+udacity_key_grader
+# passphrase
+grader
+
+-install rsa key
+ssh-keygen
+mkdir .ssh
+touch .ssh/authorized_key
+nano .ssh/authorized_key
+chmod 700 .ssh
+chmod 664 .ssh/authorized_key
+
+-not allow ssh connection without rsa keys
+sudo nano /etc/ssh/sshd_config
+sudo service ssh restart
+logout
+
+ssh -i udacity_key.rsa root@52.33.123.83 -p 2200
+
+-update system
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get autoremove
+sudo apt-get install finger
+sudo apt-get install ntp
+sudo apt-get install apache2
+sudo apt-get install libapache2-mod-wsgi
+sudo apt-get install postgresql
+sudo apt-get install python-psycopg2
+sudo apt-get install git
+sudo apt-get install python-virtualenv
+sudo easy_install sqlalchemy
+sudo easy_install Flask
+pip install oauth2client
+
+- config firewall
+sudo ufw status
+sudo ufw default deny incoming
+sudo ufw deny 22/tcp
+sudo ufw deny 22
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 2200/tcp
+sudo ufw allow www
+sudo ufw allow ntp
+sudo ufw allow 123/tcp
+sudo ufw enable
+sudo ufw status
+
+- config timezone to UTC
+sudo dpkg-reconfigure tzdata
+# none of above and later UTC
+
+- config apache
+# change default index
+cd /var/www/html
+nano /var/www/html/index.html
+# change to handle python
+nano /etc/apache2/sites-enabled/000-default.conf
+# For now, add the following line at the end of the <VirtualHost *:80> block, right before the closing </VirtualHost> line: 
+WSGIScriptAlias / /var/www/html/myapp.wsgi
+sudo service apache2 restart
+touch myapp.wsgi
+nano myapp.wsgi
+
+- config postgres
+su - postgres
+psql template1
+CREATE USER catalog WITH PASSWORD 'catalog';
+CREATE DATABASE catalog;
+GRANT CONNECT ON DATABASE catalog to catalog;
+GRANT SELECT ON DATABASE catalog to catalog;
+GRANT INSERT ON DATABASE catalog to catalog;
+GRANT UPDATE ON DATABASE catalog to catalog;
+GRANT DELETE ON DATABASE catalog to catalog;
+su - catalog
+psql -d catalog -U catalog
+
+- crontab
+crontab -e
+0 5 * * 1 sudo apt-get update
+2 5 * * 1 sudo apt-get upgrade
+
+- fail2ban
+sudo apt-get install fail2ban
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+sudo nano /etc/fail2ban/jail.local
+sudo service fail2ban stop
+sudo service fail2ban start
