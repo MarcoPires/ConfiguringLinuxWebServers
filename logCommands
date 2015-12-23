@@ -1,4 +1,4 @@
-ssh -i udacity_key.rsa root@52.33.123.83
+ssh -i udacity_key.rsa root@52.26.156.136
 sudo adduser grader
 # pass: grader
 sudo passwd -e grader
@@ -28,7 +28,8 @@ sudo nano /etc/ssh/sshd_config
 sudo service ssh restart
 logout
 
-ssh -i udacity_key.rsa root@52.33.123.83 -p 2200
+ssh -i udacity_key.rsa root@52.26.156.136 -p 2200
+ssh -i grader_udacity_key.rsa grader@52.26.156.136
 
 -update system
 sudo apt-get update

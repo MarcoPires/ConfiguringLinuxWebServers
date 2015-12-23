@@ -34,7 +34,7 @@ Restaurant app needs:
 
 #### Public IP address:
 
-52.33.123.83
+52.26.156.136
 
 #### SSH port:
 
@@ -42,13 +42,13 @@ Restaurant app needs:
 
 #### Application URL:
 
-http://ec2-52-33-123-83.us-west-2.compute.amazonaws.com/
+http://ec2-52-26-156-136.us-west-2.compute.amazonaws.com/
 
 ## Step By Step
 1. Downloaded ssh private key for online development environment through Udacity at https://www.udacity.com/account#!/development_environment
 ```
 # (where ~ is your environment's home directory)
-> ssh -i ~/.ssh/udacity_key.rsa root@52.33.123.83
+> ssh -i ~/.ssh/udacity_key.rsa root@52.26.156.136
 ```
 2. Create a new user named **grader**
 ```
@@ -72,17 +72,22 @@ grader ALL=(ALL) NOPASSWD:ALL
 # create a directory under the "grader" home directory on the server
 > mkdir .ssh
 # create and edit the public key file
-> touch .ssh/authorized_key
-> nano .ssh/authorized_key
+> touch .ssh/authorized_keys
+> nano .ssh/authorized_keys
 # Now past the public key content into the new file
 # Update the folder and file access permitions 
 > chmod 700 .ssh
-> chmod 664 .ssh/authorized_key
+> chmod 664 .ssh/authorized_keys
 ```
 4. Set login to only accept key pair and not allow password
 ```
 > sudo nano /etc/ssh/sshd_config
-# Change "PasswordAuthentication" to "no" 
+# Change "PasswordAuthentication" to "no", and disable root access
+PasswordAuthentication no
+AuthorizedKeysFile      %h/.ssh/authorized_keys
+AllowUsers grader
+DenyUsers root
+PermitRootLogin no
 > sudo service ssh restart
 ```
 5. Upgrade the system
@@ -106,7 +111,7 @@ grader ALL=(ALL) NOPASSWD:ALL
 > sudo apt-get install python-virtualenv
 > sudo easy_install sqlalchemy
 > sudo easy_install Flask
-> pip install oauth2client
+> sudo pip install oauth2client
 ```
 7. Set up the firewall
 ```
@@ -131,9 +136,13 @@ grader ALL=(ALL) NOPASSWD:ALL
 > sudo ufw enable
 # Once again check the firewall status, which should be enabled
 > sudo ufw status
+# Change the default port of ssh service to 2200
+> sudo nano /etc/ssh/sshd_config
+Port 2200
+> sudo service ssh restart
 > logout
 # From now on, it is necessary to specify the port at login
-> ssh -i udacity_key.rsa root@52.33.123.83 -p 2200
+> ssh -i grader_udacity_key.rsa grader@52.26.156.136 -p 2200
 ```
 8. Config timezone to UTC
 ```
@@ -148,11 +157,11 @@ grader ALL=(ALL) NOPASSWD:ALL
 # Add the following line to the file
 "hello world"
 # Configure Apache2 to handle WSGI module
-nano /etc/apache2/sites-enabled/000-default.conf
+> sudo nano /etc/apache2/sites-enabled/000-default.conf
 # Add the following block
 
 <VirtualHost *:80>
-        ServerName http://ec2-52-33-123-83.us-west-2.compute.amazonaws.com/
+        ServerName http://ec2-52-26-156-136.us-west-2.compute.amazonaws.com/
         ServerAdmin mpires@leya.com
         DocumentRoot /var/www/html/restaurantApp
         ErrorLog ${APACHE_LOG_DIR}/error.log
@@ -190,7 +199,9 @@ nano /etc/apache2/sites-enabled/000-default.conf
 # Create new database "catalog"
 > CREATE DATABASE catalog;
 # Grant privileges only to "catalog" user 
-> GRANT ALL PRIVILEGES ON catalog TO catalog;
+> GRANT ALL PRIVILEGES ON DATABASE catalog TO catalog;
+> \q
+> exit
 ```
 11.  Clone Restaurant App 
 ```
@@ -200,7 +211,7 @@ nano /etc/apache2/sites-enabled/000-default.conf
 ```
 # Install "glaces" and the dependencies 
 > curl -L http://bit.ly/glances | /bin/bash
-> pip install glances
+> sudo pip install glances
 # Run "glaces"
 > glances
 ```
